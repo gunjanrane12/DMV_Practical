@@ -1,0 +1,82 @@
+'''Data Wrangling
+Problem Statement: Data Wrangling on Real Estate Market
+'''
+
+import pandas as pd
+
+df = pd.read_csv("4_RealEstate_price.csv")
+print(df)
+
+df.columns = df.columns.str.strip()
+df.columns = df.columns.str.replace(" ", "_")
+
+print(df.isnull().sum())
+
+price_mean = df['Price'].mean()
+bedrooms_mode = df['Bedrooms'].mode()[0]
+
+# Impute missing values with the mode
+df['Price'].fillna(price_mean, inplace=True)
+df['Bedrooms'].fillna(bedrooms_mode, inplace=True)
+
+print(df.isnull().sum())
+
+#Filter
+filtered_df = df[df['Bedrooms'] <= 2]
+print(filtered_df)
+
+#Subset
+subset_df = df[["Price", "SqFt", "Offers"]]
+print(subset_df)
+
+label_mapping = {"No": 0, "Yes": 1}
+df['Brick'] = df['Brick'].map(label_mapping)
+
+print(df['Brick'])
+
+grouped_data = df.groupby(['Neighborhood'])['Price'].mean().reset_index()
+print(grouped_data)
+
+print(df.info())
+
+df['Price'] = df['Price'].astype(int)
+print(df.info())
+
+from scipy import stats
+
+# Calculate the Z-scores for the 'fare_amount' column
+df['z_score'] = stats.zscore(df['Price'])
+
+# Define a threshold for identifying outliers (e.g., 3)
+threshold = 3
+
+# Create a boolean mask to identify outliers
+outliers_mask = (df['z_score'] > threshold) | (df['z_score'] < -threshold)
+
+# Extract the outliers
+outliers = df[outliers_mask]
+
+# Print the outliers
+print(outliers)
+
+df.loc[103, 'Price'] = df.loc[103, 'Price'] if df.loc[103, 'Price'] <= threshold else df['Price'].median()
+
+print("Result of the 'Price' column:")
+print(df['Price'])
+
+from scipy import stats
+
+# Calculate the Z-scores for the 'fare_amount' column
+df['z_score'] = stats.zscore(df['Price'])
+
+# Define a threshold for identifying outliers (e.g., 3)
+threshold = 3
+
+# Create a boolean mask to identify outliers
+outliers_mask = (df['z_score'] > threshold) | (df['z_score'] < -threshold)
+
+# Extract the outliers
+outliers = df[outliers_mask]
+
+# Print the outliers
+print(outliers)
