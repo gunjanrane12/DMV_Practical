@@ -1,0 +1,67 @@
+'''Data Cleaning and Preparation
+Problem Statement: Analyzing Customer Churn in a Telecommunications Company'''
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import LabelEncoder
+
+dataset_path = "tele_com.csv"
+df = pd.read_csv("3_tele_com.csv")
+
+print(df.info())
+
+print("\nMissing Values:")
+print(df.isnull().sum())
+
+df['MultipleLines'] = df['MultipleLines'].fillna('Not known').str.lower()
+print(df)
+
+df['InternetService'] = df['InternetService'].replace('Fiber opticalal', 'Fiber Optic')
+print(df)
+
+df['MonthlyCharges'] = df['MonthlyCharges'].astype(int)
+df['TotalCharges'] = df['TotalCharges'].astype(int)
+
+print(df.info())
+
+import numpy as np
+# Select numerical columns for Z-Score calculation
+numerical_cols = ['tenure', 'MonthlyCharges', 'TotalCharges']
+
+# Calculate Z-Scores for selected columns
+z_scores = np.abs((df[numerical_cols] - df[numerical_cols].mean()) / df[numerical_cols].std())
+
+# Define a threshold for outlier detection (e.g., Z-Score greater than 3)
+threshold = 3
+
+# Identify and print outliers
+outliers = z_scores > threshold
+print("Outliers in each column:")
+print(outliers)
+
+# Count outliers in each column
+outlier_counts = outliers.sum()
+print("\nNumber of outliers in each column:")
+print(outlier_counts)
+
+numerical_features = ['tenure', 'MonthlyCharges', 'TotalCharges']
+scaler = StandardScaler()
+
+df[numerical_features] = scaler.fit_transform(df[numerical_features])
+
+print(df.head())
+
+df['Contract_Renewal'] = df['Contract'].apply(lambda x: 'Yes' if x in ['One year', 'Two year'] else 'No')
+
+print(df['Contract_Renewal'])
+
+X = df.drop(columns=['Churn'])
+y = df['Churn']
+
+# Split the dataset into training and testing sets (e.g., 70% training, 30% testing)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+# Print the shapes of the training and testing sets to verify the split
+print("Training set shape - X:", X_train.shape, "y:", y_train.shape)
+print("Testing set shape - X:", X_test.shape, "y:", y_test.shape)
